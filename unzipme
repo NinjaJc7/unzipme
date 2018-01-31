@@ -184,6 +184,10 @@ def extract_file(cur_file):
         else:
             'else print'
 
+    except RuntimeError, err:
+        print '{} : {}'.format(cur_file, err)
+        exit(1)
+
     except IOError, err:
         print '{} : {}'.format(cur_file, err)
         exit(1)
