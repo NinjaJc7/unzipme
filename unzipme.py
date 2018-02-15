@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import fnmatch
+import getpass
 import os
 import subprocess
 import time
@@ -66,11 +67,11 @@ def find_files_in_folder():
             return result
 
     except KeyboardInterrupt:
-        print "\nSearch stopped, exiting unzipme"
+        print "\nSearch stopped, exiting unzipme.py"
         exit(0)
 
 
-def extract_file(cur_file):
+def extract_file(cur_file, zip_pass=False):
     """Extracts current file in sub-folder EXTRACTED
 
     :param cur_file:
@@ -84,11 +85,42 @@ def extract_file(cur_file):
 
     try:
         # *.zip File extraction
-        if cur_file.endswith(patterns[0]):
-            zip_ref = zipfile.ZipFile(cur_file, 'r')
-            zip_ref.extractall(extract_path)
-            zip_ref.close()
-            return
+        if cur_file.endswith(patterns[0]) and not zip_pass:
+            print 'inside zip, no pass', zip_pass
+            try:
+                zip_ref = zipfile.ZipFile(cur_file, 'r')
+                zip_ref.extractall(extract_path)
+                zip_ref.close()
+                return
+            except RuntimeError, err:
+                answer = raw_input("Password invalid or missing, continue? (Y/N) : ")
+                if answer.lower() == 'y':
+                    zip_pass = getpass.getpass(prompt='Enter Password: ')
+                    extract_file(cur_file, zip_pass)
+                else:
+                    return
+            except AttributeError, err:
+                print '{} : {}'.format(cur_file, err)
+                exit(1)
+
+        # *.zip File extraction w/ password
+        if cur_file.endswith(patterns[0]) and zip_pass:
+            try:
+                zip_ref = zipfile.ZipFile(cur_file, 'r')
+                zip_ref.extractall(path=extract_path, pwd=zip_pass)
+                zip_ref.close()
+                return
+            except RuntimeError, err:
+                answer = raw_input("Password invalid or missing, continue? (Y/N) : ")
+                if answer.lower() == 'y':
+                    zip_pass = getpass.getpass(prompt='Enter Password: ')
+                    extract_file(cur_file, zip_pass)
+                else:
+                    return
+            except AttributeError, err:
+                print '{} : {}'.format(cur_file, err)
+                print "Exiting unzipme "
+                exit(1)
 
         # *.tgz file extraction
         elif cur_file.endswith(patterns[1]):
@@ -184,16 +216,19 @@ def extract_file(cur_file):
         else:
             'else print'
 
-    except RuntimeError, err:
+
+    except KeyError, err:
         print '{} : {}'.format(cur_file, err)
+        print "Exiting unzipme"
         exit(1)
 
     except IOError, err:
         print '{} : {}'.format(cur_file, err)
+        print "Exiting unzipme"
         exit(1)
 
     except KeyboardInterrupt:
-        print "\nExiting unzipme"
+        print "\nExiting unzipme.py"
         exit(0)
 
 
@@ -211,8 +246,8 @@ def set_extract_permisions():
         return
 
     except KeyboardInterrupt:
-        print "\nExiting unzipme"
+        print "\nExiting unzipme.py"
         exit(0)
 
-
-
+if __name__ == '__main__':
+    main()
