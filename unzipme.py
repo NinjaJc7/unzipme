@@ -1,4 +1,5 @@
 #!/usr/bin/python
+import argparse
 import fnmatch
 import getpass
 import os
@@ -11,8 +12,23 @@ import progressbar
 def main():
     """starts the collection of files in the directory it's ran from.
     """
+    args = parse_args()
+    if args.verbose:
+        print 'verbose mode enabled'
+        time.sleep(1)
     progress()
 
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description='********** Finds compressed files and extracts them to ./EXTRACTED **********\n\n'
+                    'Supports: *.zip, *.tgz, *.gz, *.xz, *.bz2, *.tbz, *.tbz2, *.tar, *.Z, *.rar')
+
+    #Optional Arguments
+    parser.add_argument("-v", "--verbose", help="Increase output verbosity. Default: False",
+                        action="store_true")
+    args = parser.parse_args()
+    return args
 
 def progress():
     """Displays progress of compressed files found and extracted
@@ -20,15 +36,24 @@ def progress():
     """
     bundle_list = find_files_in_folder()
     bundle_length = len(bundle_list)
-    if bundle_length > 0:
-        print "EXTRACTING {} files found please wait...".format(bundle_length)
+    if bundle_length > 1 and not bundle_length < 0:
+        print "{} files found please wait...".format(bundle_length)
         set_file_permissions(bundle_list)
         pbar = progressbar.ProgressBar(
             widgets=[progressbar.Percentage(), ' ', progressbar.SimpleProgress(), progressbar.Bar()])
         for n in pbar(range(bundle_length)):
             extract_file(bundle_list[n])
             time.sleep(.2)
-        exit(0)
+
+    elif bundle_length == 1:
+        print "{} file found please wait...".format(bundle_length)
+        set_file_permissions(bundle_list)
+        if extract_file(bundle_list[0]):
+            print "File '{}' extracted".format(os.path.basename(bundle_list[0]))
+            exit(0)
+        else:
+            print "File '{}' could not be extracted".format(os.path.basename(bundle_list[0]))
+            exit(0)
     else:
         print 'no compressed files found'
         exit(0)
@@ -86,19 +111,18 @@ def extract_file(cur_file, zip_pass=False):
     try:
         # *.zip File extraction
         if cur_file.endswith(patterns[0]) and not zip_pass:
-            print 'inside zip, no pass', zip_pass
             try:
                 zip_ref = zipfile.ZipFile(cur_file, 'r')
                 zip_ref.extractall(extract_path)
                 zip_ref.close()
-                return
+                return True
             except RuntimeError, err:
                 answer = raw_input("Password invalid or missing, continue? (Y/N) : ")
                 if answer.lower() == 'y':
                     zip_pass = getpass.getpass(prompt='Enter Password: ')
                     extract_file(cur_file, zip_pass)
                 else:
-                    return
+                    return False
             except AttributeError, err:
                 print '{} : {}'.format(cur_file, err)
                 exit(1)
@@ -109,14 +133,14 @@ def extract_file(cur_file, zip_pass=False):
                 zip_ref = zipfile.ZipFile(cur_file, 'r')
                 zip_ref.extractall(path=extract_path, pwd=zip_pass)
                 zip_ref.close()
-                return
+                return True
             except RuntimeError, err:
                 answer = raw_input("Password invalid or missing, continue? (Y/N) : ")
                 if answer.lower() == 'y':
                     zip_pass = getpass.getpass(prompt='Enter Password: ')
                     extract_file(cur_file, zip_pass)
                 else:
-                    return
+                    return False
             except AttributeError, err:
                 print '{} : {}'.format(cur_file, err)
                 print "Exiting unzipme "
