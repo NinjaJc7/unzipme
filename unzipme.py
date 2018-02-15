@@ -214,7 +214,7 @@ def extract_file(cur_file, zip_pass=False):
                 subprocess.call(command, shell=True, stdout=open(os.devnull, 'wb'))
                 return
         else:
-            'else print'
+            return
 
 
     except KeyError, err:
