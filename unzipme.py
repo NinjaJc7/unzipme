@@ -20,6 +20,10 @@ def main():
 
 
 def parse_args():
+    """Parses optional args and shows menu. 
+
+    :return: args passed from command line.
+    """
     parser = argparse.ArgumentParser(
         description='********** Finds compressed files and extracts them to ./EXTRACTED **********\n\n'
                     'Supports: *.zip, *.tgz, *.gz, *.xz, *.bz2, *.tbz, *.tbz2, *.tar, *.Z, *.rar')
