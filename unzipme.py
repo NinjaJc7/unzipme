@@ -20,7 +20,7 @@ def main():
 
 
 def parse_args():
-    """Parses optional args and shows menu. 
+    """Parses optional args and shows menu.
 
     :return: args passed from command line.
     """
@@ -48,15 +48,18 @@ def progress():
         for n in pbar(range(bundle_length)):
             extract_file(bundle_list[n])
             time.sleep(.2)
+        set_extract_permisions()
 
     elif bundle_length == 1:
         print "{} file found please wait...".format(bundle_length)
         set_file_permissions(bundle_list)
         if extract_file(bundle_list[0]):
             print "File '{}' extracted".format(os.path.basename(bundle_list[0]))
+            set_extract_permisions()
             exit(0)
         else:
             print "File '{}' could not be extracted".format(os.path.basename(bundle_list[0]))
+
             exit(0)
     else:
         print 'no compressed files found'
@@ -98,7 +101,6 @@ def find_files_in_folder():
     except KeyboardInterrupt:
         print "\nSearch stopped, exiting unzipme.py"
         exit(0)
-
 
 def extract_file(cur_file, zip_pass=False):
     """Extracts current file in sub-folder EXTRACTED
@@ -232,7 +234,7 @@ def extract_file(cur_file, zip_pass=False):
 
         # *.rar or *.7z file extraction
         elif cur_file.endswith(patterns[9]) or cur_file.endswith(patterns[10]):
-            command = '7z x {} -o {}'.format(cur_file, extract_path)
+            command = '7z x {} -o{}'.format(cur_file, extract_path)
             if os.path.isdir(extract_path):
                 subprocess.call(command, shell=True, stdout=open(os.devnull, 'wb'))
                 return
