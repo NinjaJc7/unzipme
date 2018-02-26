@@ -47,40 +47,54 @@ def parse_args():
     return args
 
 def progress(compressed_type):
-    """Displays progress of compressed files found and extracted
+    """Displays progress of compressed files found and extracted.
 
     """
     file_list = find_compressed_files_in_folder(compressed_type)
     bundle_length = len(file_list)
     if bundle_length > 1 and not bundle_length < 0 and not compressed_type:
-        print "{} files found please wait...".format(bundle_length)
-        set_file_permissions(file_list)
-        pbar = progressbar.ProgressBar(
-            widgets=[progressbar.Percentage(), ' ', progressbar.SimpleProgress(), progressbar.Bar()])
-        for n in pbar(range(bundle_length)):
-            extract_file(file_list[n])
-            time.sleep(.2)
-        set_extract_permisions()
+        if bundle_length > 1 and not bundle_length < 0 and not compressed_type:
+            answer = raw_input("{} files found, extract? (Y/N): ".format(bundle_length))
+            if answer.lower() == 'y':
+                set_file_permissions(file_list)
+                pbar = progressbar.ProgressBar(
+                    widgets=[progressbar.Percentage(), ' ', progressbar.SimpleProgress(), progressbar.Bar()])
+                for n in pbar(range(bundle_length)):
+                    extract_file(file_list[n])
+                    time.sleep(.2)
+                set_extract_permisions()
+            else:
+                print 'Files not extracted, exiting unzipme.'
+                exit(0)
 
     if bundle_length > 1 and not bundle_length < 0 and compressed_type:
-        print "{} files found please wait...".format(bundle_length)
-        set_file_permissions(file_list)
-        pbar = progressbar.ProgressBar(
-            widgets=[progressbar.Percentage(), ' ', progressbar.SimpleProgress(), progressbar.Bar()])
-        for n in pbar(range(bundle_length)):
-            extract_file(file_list[n])
-            time.sleep(.2)
-        set_extract_permisions()
+        answer = raw_input("{} {} files found, extract? (Y/N): ".format(bundle_length, compressed_type))
+        if answer.lower() == 'y':
+            set_file_permissions(file_list)
+            pbar = progressbar.ProgressBar(
+                widgets=[progressbar.Percentage(), ' ', progressbar.SimpleProgress(), progressbar.Bar()])
+            for n in pbar(range(bundle_length)):
+                extract_file(file_list[n])
+                time.sleep(.2)
+            set_extract_permisions()
+        else:
+            print 'Files not extracted, exiting unzipme.'
+            exit(0)
+
 
     elif bundle_length == 1:
-        print "{} file found please wait...".format(bundle_length)
-        set_file_permissions(file_list)
-        if extract_file(file_list[0]):
-            print "File '{}' extracted".format(os.path.basename(file_list[0]))
-            set_extract_permisions()
-            exit(0)
+        answer = raw_input("{} {} file found, extract? (Y/N): ".format(bundle_length, compressed_type))
+        if answer.lower() == 'y':
+            set_file_permissions(file_list)
+            if extract_file(file_list[0]):
+                print "File '{}' extracted".format(os.path.basename(file_list[0]))
+                set_extract_permisions()
+                exit(0)
+            else:
+                print "File '{}' could not be extracted".format(os.path.basename(file_list[0]))
+                exit(0)
         else:
-            print "File '{}' could not be extracted".format(os.path.basename(file_list[0]))
+            print 'Files not extracted, exiting unzipme.'
             exit(0)
     else:
         print 'no compressed files found in {}'.format(os.getcwd())
