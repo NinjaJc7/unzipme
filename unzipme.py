@@ -16,13 +16,22 @@ def main():
     if args.verbose:
         print 'verbose mode enabled'
         time.sleep(1)
-    progress()
+    if args.type:
+        star = '*'
+        period = '.'
+        if args.type[0] != star:
+            if args.type[0] == period:
+                args.type = star + args.type
+            elif args.type[0] != period:
+                args.type = star + period + args.type
+    progress(args.type)
 
 
 def parse_args():
     """Parses optional args and shows menu.
 
     :return: args passed from command line.
+
     """
     parser = argparse.ArgumentParser(
         description='**************************** unzipme help menu ***************************** '
@@ -32,16 +41,28 @@ def parse_args():
     #Optional Arguments
     parser.add_argument("-v", "--verbose", help="Increase output verbosity. Default: False",
                         action="store_true")
+    parser.add_argument('-t', '--type', default=False, metavar='',
+                        help='Extracts specific compressed file format only. Default: False')
     args = parser.parse_args()
     return args
 
-def progress():
+def progress(compressed_type):
     """Displays progress of compressed files found and extracted
 
     """
-    file_list = find_compressed_files_in_folder()
+    file_list = find_compressed_files_in_folder(compressed_type)
     bundle_length = len(file_list)
-    if bundle_length > 1 and not bundle_length < 0:
+    if bundle_length > 1 and not bundle_length < 0 and not compressed_type:
+        print "{} files found please wait...".format(bundle_length)
+        set_file_permissions(file_list)
+        pbar = progressbar.ProgressBar(
+            widgets=[progressbar.Percentage(), ' ', progressbar.SimpleProgress(), progressbar.Bar()])
+        for n in pbar(range(bundle_length)):
+            extract_file(file_list[n])
+            time.sleep(.2)
+        set_extract_permisions()
+
+    if bundle_length > 1 and not bundle_length < 0 and compressed_type:
         print "{} files found please wait...".format(bundle_length)
         set_file_permissions(file_list)
         pbar = progressbar.ProgressBar(
@@ -60,7 +81,6 @@ def progress():
             exit(0)
         else:
             print "File '{}' could not be extracted".format(os.path.basename(file_list[0]))
-
             exit(0)
     else:
         print 'no compressed files found in {}'.format(os.getcwd())
@@ -75,14 +95,17 @@ def set_file_permissions(bundle_list):
     return
 
 
-def find_compressed_files_in_folder():
+def find_compressed_files_in_folder(file_type):
     """Finds compressed files in directory, returns them as a list.
 
     SUPPORTED FORMATS: *.zip, *.tgz, *.gz, *.xz
     :return: List of files that are in compressed/zipped formats.
     """
     print 'searching for compressed files, please wait...'
-    extensions = ['*.zip', '*.tgz', '*.gz', '*.xz', '*.bz2', '*.tbz', '*.tbz2', '*.tar', '*.Z', '*.rar']
+    if not file_type:
+        extensions = ['*.zip', '*.tgz', '*.gz', '*.xz', '*.bz2', '*.tbz', '*.tbz2', '*.tar', '*.Z', '*.rar']
+    else:
+        extensions = [file_type]
     path = os.getcwd()
     result = []
     path, dirs, files = os.walk(path).next()
