@@ -25,7 +25,8 @@ def parse_args():
     :return: args passed from command line.
     """
     parser = argparse.ArgumentParser(
-        description='********** Finds compressed files and extracts them to ./EXTRACTED **********\n\n'
+        description='**************************** unzipme help menu ***************************** '
+                    'Finds compressed files from directory ran and extracts them to ./EXTRACTED \n\n'
                     'Supports: *.zip, *.tgz, *.gz, *.xz, *.bz2, *.tbz, *.tbz2, *.tar, *.Z, *.rar')
 
     #Optional Arguments
@@ -38,31 +39,31 @@ def progress():
     """Displays progress of compressed files found and extracted
 
     """
-    bundle_list = find_files_in_folder()
-    bundle_length = len(bundle_list)
+    file_list = find_compressed_files_in_folder()
+    bundle_length = len(file_list)
     if bundle_length > 1 and not bundle_length < 0:
         print "{} files found please wait...".format(bundle_length)
-        set_file_permissions(bundle_list)
+        set_file_permissions(file_list)
         pbar = progressbar.ProgressBar(
             widgets=[progressbar.Percentage(), ' ', progressbar.SimpleProgress(), progressbar.Bar()])
         for n in pbar(range(bundle_length)):
-            extract_file(bundle_list[n])
+            extract_file(file_list[n])
             time.sleep(.2)
         set_extract_permisions()
 
     elif bundle_length == 1:
         print "{} file found please wait...".format(bundle_length)
-        set_file_permissions(bundle_list)
-        if extract_file(bundle_list[0]):
-            print "File '{}' extracted".format(os.path.basename(bundle_list[0]))
+        set_file_permissions(file_list)
+        if extract_file(file_list[0]):
+            print "File '{}' extracted".format(os.path.basename(file_list[0]))
             set_extract_permisions()
             exit(0)
         else:
-            print "File '{}' could not be extracted".format(os.path.basename(bundle_list[0]))
+            print "File '{}' could not be extracted".format(os.path.basename(file_list[0]))
 
             exit(0)
     else:
-        print 'no compressed files found'
+        print 'no compressed files found in {}'.format(os.getcwd())
         exit(0)
 
 
@@ -74,7 +75,7 @@ def set_file_permissions(bundle_list):
     return
 
 
-def find_files_in_folder():
+def find_compressed_files_in_folder():
     """Finds compressed files in directory, returns them as a list.
 
     SUPPORTED FORMATS: *.zip, *.tgz, *.gz, *.xz
@@ -271,8 +272,14 @@ def set_extract_permisions():
     extract_path = '{}/EXTRACTED/'.format(cwd)
 
     try:
-        command = 'chmod 777 -R * {}'.format(extract_path)
-        subprocess.call(command, shell=True, stdout=open(os.devnull, 'wb'))
+        # command = 'chmod 777 -R * {}'.format(extract_path)
+        # subprocess.call(command, shell=True, stdout=open(os.devnull, 'wb'))
+        for dir in extract_path:
+            for root, dirs, files in os.walk(dir):
+                for d in dirs:
+                    os.chmod(os.path.join(root, d), 777)
+                for f in files:
+                    os.chmod(os.path.join(root, f), 777)
         return
 
     except KeyboardInterrupt:
