@@ -113,7 +113,7 @@ def set_file_permissions(bundle_list):
 def find_compressed_files_in_folder(file_type):
     """Finds compressed files in directory, returns them as a list.
 
-    SUPPORTED FORMATS: *.zip, *.tgz, *.gz, *.xz
+    SUPPORTED FORMATS: *.zip', '*.tgz', '*.gz', '*.xz', '*.bz2', '*.tbz', '*.tbz2', '*.tar', '*.Z', '*.rar
     :return: List of files that are in compressed/zipped formats.
     """
     print 'searching for compressed files, please wait...'
@@ -124,9 +124,6 @@ def find_compressed_files_in_folder(file_type):
     path = os.getcwd()
     result = []
     path, dirs, files = os.walk(path).next()
-    #file_count = len(files)
-    # pbar = progressbar.ProgressBar(
-    #     widgets=[progressbar.Percentage(), ' Added to list', ' ', progressbar.AnimatedMarker(), ' '])
     try:
         for ext in extensions:
             for root, dirs, files in os.walk(path):
@@ -221,7 +218,6 @@ def extract_file(cur_file, zip_pass=False):
 
         # *.xz file extraction
         elif cur_file.endswith(patterns[3]):
-            # print 'pattern xz: '.format(os.path.splitext(cur_file)[1])
             command = 'unxz {}'.format(cur_file)
             if os.path.isdir(extract_path):
                 os.chmod(extract_path, 0774)
