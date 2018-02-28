@@ -24,7 +24,7 @@ def main():
                 args.type = star + args.type
             elif args.type[0] != period:
                 args.type = star + period + args.type
-    progress(args.type)
+    progress(args.type, args.verbose)
 
 
 def parse_args():
@@ -46,7 +46,7 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-def progress(compressed_type):
+def progress(compressed_type, verbose=False):
     """Displays progress of compressed files found and extracted.
 
     """
@@ -55,14 +55,14 @@ def progress(compressed_type):
     if bundle_length > 1 and not bundle_length < 0 and not compressed_type:
         answer = raw_input("{}, files found, extract? (Y/N): ".format(bundle_length))
         if answer.lower() == 'y':
-            set_file_permissions(file_list)
+            set_file_permissions(file_list, verbose)
             pbar = progressbar.ProgressBar(
                 widgets=[progressbar.Percentage(), ' ', progressbar.SimpleProgress(), progressbar.Bar()])
             for n in pbar(range(bundle_length)):
                 extract_file(file_list[n])
                 time.sleep(.2)
-            set_extract_permisions()
-            print 'files extract to: {}/EXTRACT'.format(os.getcwd())
+            set_extract_permisions(verbose)
+            print '   files extract to: {}/EXTRACT'.format(os.getcwd())
         else:
             print 'Files not extracted, exiting unzipme.'
             exit(0)
@@ -70,14 +70,14 @@ def progress(compressed_type):
     elif bundle_length > 1 and not bundle_length < 0 and compressed_type:
         answer = raw_input("{}, {} files found, extract? (Y/N): ".format(bundle_length, compressed_type))
         if answer.lower() == 'y':
-            set_file_permissions(file_list)
+            set_file_permissions(file_list, verbose)
             pbar = progressbar.ProgressBar(
                 widgets=[progressbar.Percentage(), ' ', progressbar.SimpleProgress(), progressbar.Bar()])
             for n in pbar(range(bundle_length)):
                 extract_file(file_list[n])
                 time.sleep(.2)
-            set_extract_permisions()
-            print 'files extract to: {}/EXTRACTED/'.format(os.getcwd())
+            set_extract_permisions(verbose)
+            print '   Files extract to: {}/EXTRACTED/'.format(os.getcwd())
         else:
             print 'Files not extracted, exiting unzipme.'
             exit(0)
@@ -86,10 +86,10 @@ def progress(compressed_type):
     elif bundle_length == 1:
         answer = raw_input("{} file found, extract? (Y/N): ".format(bundle_length))
         if answer.lower() == 'y':
-            set_file_permissions(file_list)
+            set_file_permissions(file_list, verbose)
             if extract_file(file_list[0]):
                 print "File '{}' extracted".format(os.path.basename(file_list[0]))
-                set_extract_permisions()
+                set_extract_permisions(verbose)
                 exit(0)
             else:
                 print "File '{}' could not be extracted".format(os.path.basename(file_list[0]))
@@ -102,21 +102,24 @@ def progress(compressed_type):
         exit(0)
 
 
-def set_file_permissions(bundle_list):
+def set_file_permissions(bundle_list, verbose=False):
     """Checks and sets permissions to compressed/zipped file.
     """
+    if verbose:
+        print 'setting permission to files found\n'
     for i in bundle_list:
         os.chmod(i, 0777)
     return
 
 
-def find_compressed_files_in_folder(file_type):
+def find_compressed_files_in_folder(file_type, verbose=False):
     """Finds compressed files in directory, returns them as a list.
 
     SUPPORTED FORMATS: *.zip', '*.tgz', '*.gz', '*.xz', '*.bz2', '*.tbz', '*.tbz2', '*.tar', '*.Z', '*.rar
     :return: List of files that are in compressed/zipped formats.
     """
-    print 'searching for compressed files, please wait...'
+    if verbose:
+        print 'searching for compressed files, please wait...'
     if not file_type:
         extensions = ['*.zip', '*.tgz', '*.gz', '*.xz', '*.bz2', '*.tbz', '*.tbz2', '*.tar', '*.Z', '*.rar']
     else:
@@ -137,7 +140,7 @@ def find_compressed_files_in_folder(file_type):
         print "\nSearch stopped, exiting unzipme.py"
         exit(0)
 
-def extract_file(cur_file, zip_pass=False):
+def extract_file(cur_file, zip_pass=False, verbose=False):
     """Extracts current file in sub-folder EXTRACTED
 
     :param cur_file:
@@ -148,7 +151,8 @@ def extract_file(cur_file, zip_pass=False):
 
     # TODO Finish *.rar format for extraction
     patterns = ['.zip', '.tgz', '.gz', '.xz', '.bz2', '.tbz', '.tbz2', '.tar', '.Z', '.rar', '.7z']
-
+    if verbose:
+        print "current file extracting: {}".format(os.path.basename(cur_file))
     try:
         # *.zip File extraction
         if cur_file.endswith(patterns[0]) and not zip_pass:
@@ -164,7 +168,7 @@ def extract_file(cur_file, zip_pass=False):
                     print ''
                     extract_file(cur_file, zip_pass)
                 else:
-                    print "file '{}' could not be extracted".format(os.path.basename(cur_file))
+                    print "File '{}' could not be extracted\n".format(os.path.basename(cur_file))
                     return
             except AttributeError, err:
                 print '{} : {}'.format(cur_file, err)
@@ -178,12 +182,12 @@ def extract_file(cur_file, zip_pass=False):
                 zip_ref.close()
                 return
             except RuntimeError, err:
-                answer = raw_input("Password invalid or missing, continue? (Y/N) : ")
+                answer = raw_input("\nPassword invalid or missing, continue? (Y/N) : ")
                 if answer.lower() == 'y':
                     zip_pass = getpass.getpass(prompt='Enter Password: ')
                     extract_file(cur_file, zip_pass)
                 else:
-                    print "file '{}' could not be extracted".format(os.path.basename(cur_file))
+                    print "File '{}' could not be extracted\n".format(os.path.basename(cur_file))
                     return
             except AttributeError, err:
                 print '{} : {}'.format(cur_file, err)
@@ -299,14 +303,15 @@ def extract_file(cur_file, zip_pass=False):
         exit(0)
 
 
-def set_extract_permisions():
+def set_extract_permisions(verbose=False):
     """Sets all sub file permissions to 777 in ./EXTRACTED
 
     :return:
     """
+    if verbose:
+        print 'setting file permissions, please wait...'
     cwd = os.getcwd()
     extract_path = '{}/EXTRACTED'.format(cwd)
-    print 'setting file permissions, please wait...'
     try:
         command = 'chmod 777 -R {}'.format(extract_path)
         subprocess.call(command, shell=True, stdout=open(os.devnull, 'wb'))
