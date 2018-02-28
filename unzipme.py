@@ -168,7 +168,7 @@ def extract_file(cur_file, zip_pass=False):
                     extract_file(cur_file, zip_pass)
                 else:
                     print "file '{}' could not be extracted".format(os.path.basename(cur_file))
-                    return False
+                    return 
             except AttributeError, err:
                 print '{} : {}'.format(cur_file, err)
                 exit(1)
@@ -179,7 +179,7 @@ def extract_file(cur_file, zip_pass=False):
                 zip_ref = zipfile.ZipFile(cur_file, 'r')
                 zip_ref.extractall(path=extract_path, pwd=zip_pass)
                 zip_ref.close()
-                return True
+                return
             except RuntimeError, err:
                 answer = raw_input("Password invalid or missing, continue? (Y/N) : ")
                 if answer.lower() == 'y':
@@ -187,7 +187,7 @@ def extract_file(cur_file, zip_pass=False):
                     extract_file(cur_file, zip_pass)
                 else:
                     print "file '{}' could not be extracted".format(os.path.basename(cur_file))
-                    return False
+                    return
             except AttributeError, err:
                 print '{} : {}'.format(cur_file, err)
                 print "Exiting unzipme "
