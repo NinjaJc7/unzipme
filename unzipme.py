@@ -59,9 +59,11 @@ def progress(compressed_type):
                 set_file_permissions(file_list)
                 pbar = progressbar.ProgressBar(
                     widgets=[progressbar.Percentage(), ' ', progressbar.SimpleProgress(), progressbar.Bar()])
+                # widgets = ['EXTRACTING: ', progressbar.FormatLabel(''), '', progressbar.ReverseBar(), ' ',
+                #            progressbar.Percentage()]
+                # pbar = progressbar.ProgressBar(widgets=widgets, maxval=bundle_length)
                 for n in pbar(range(bundle_length)):
                     extract_file(file_list[n])
-                    time.sleep(.2)
                 set_extract_permisions()
             else:
                 print 'Files not extracted, exiting unzipme.'
@@ -83,7 +85,7 @@ def progress(compressed_type):
 
 
     elif bundle_length == 1:
-        answer = raw_input("{} {} file found, extract? (Y/N): ".format(bundle_length, compressed_type))
+        answer = raw_input("{} file found, extract? (Y/N): ".format(bundle_length))
         if answer.lower() == 'y':
             set_file_permissions(file_list)
             if extract_file(file_list[0]):
@@ -123,18 +125,17 @@ def find_compressed_files_in_folder(file_type):
     path = os.getcwd()
     result = []
     path, dirs, files = os.walk(path).next()
-    file_count = len(files)
-    pbar = progressbar.ProgressBar(
-        widgets=[progressbar.Percentage(), ' ', progressbar.SimpleProgress(), progressbar.Bar()])
+    #file_count = len(files)
+    # pbar = progressbar.ProgressBar(
+    #     widgets=[progressbar.Percentage(), ' Added to list', ' ', progressbar.AnimatedMarker(), ' '])
     try:
-        for n in pbar(range(file_count)):
-            for ext in extensions:
-                for root, dirs, files in os.walk(path):
-                    for name in files:
-                        if fnmatch.fnmatch(name, ext):
-                            result.append(os.path.join(root, name))
-            list.sort(result)
-            return result
+        for ext in extensions:
+            for root, dirs, files in os.walk(path):
+                for name in files:
+                    if fnmatch.fnmatch(name, ext):
+                        result.append(os.path.join(root, name))
+        list.sort(result)
+        return result
 
     except KeyboardInterrupt:
         print "\nSearch stopped, exiting unzipme.py"
@@ -306,22 +307,17 @@ def set_extract_permisions():
     :return:
     """
     cwd = os.getcwd()
-    extract_path = '{}/EXTRACTED/'.format(cwd)
-
+    extract_path = '{}/EXTRACTED'.format(cwd)
+    print 'setting file permissions, please wait...'
     try:
-        # command = 'chmod 777 -R * {}'.format(extract_path)
-        # subprocess.call(command, shell=True, stdout=open(os.devnull, 'wb'))
-        for dir in extract_path:
-            for root, dirs, files in os.walk(dir):
-                for d in dirs:
-                    os.chmod(os.path.join(root, d), 777)
-                for f in files:
-                    os.chmod(os.path.join(root, f), 777)
+        command = 'chmod 777 -R {}'.format(extract_path)
+        subprocess.call(command, shell=True, stdout=open(os.devnull, 'wb'))
         return
 
     except KeyboardInterrupt:
         print "\nExiting unzipme.py"
         exit(0)
+
 
 if __name__ == '__main__':
     main()
