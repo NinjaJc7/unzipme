@@ -67,7 +67,7 @@ def progress(compressed_type):
             print 'Files not extracted, exiting unzipme.'
             exit(0)
 
-    if bundle_length > 1 and not bundle_length < 0 and compressed_type:
+    elif bundle_length > 1 and not bundle_length < 0 and compressed_type:
         answer = raw_input("{}, {} files found, extract? (Y/N): ".format(bundle_length, compressed_type))
         if answer.lower() == 'y':
             set_file_permissions(file_list)
