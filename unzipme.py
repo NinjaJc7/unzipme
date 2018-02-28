@@ -58,12 +58,11 @@ def progress(compressed_type):
             set_file_permissions(file_list)
             pbar = progressbar.ProgressBar(
                 widgets=[progressbar.Percentage(), ' ', progressbar.SimpleProgress(), progressbar.Bar()])
-            # widgets = ['EXTRACTING: ', progressbar.FormatLabel(''), '', progressbar.ReverseBar(), ' ',
-            #            progressbar.Percentage()]
-            # pbar = progressbar.ProgressBar(widgets=widgets, maxval=bundle_length)
             for n in pbar(range(bundle_length)):
                 extract_file(file_list[n])
+                time.sleep(.2)
             set_extract_permisions()
+            print 'files extract to: {}/EXTRACT'.format(os.getcwd())
         else:
             print 'Files not extracted, exiting unzipme.'
             exit(0)
@@ -78,6 +77,7 @@ def progress(compressed_type):
                 extract_file(file_list[n])
                 time.sleep(.2)
             set_extract_permisions()
+            print 'files extract to: {}/EXTRACTED/'.format(os.getcwd())
         else:
             print 'Files not extracted, exiting unzipme.'
             exit(0)
@@ -168,7 +168,7 @@ def extract_file(cur_file, zip_pass=False):
                     extract_file(cur_file, zip_pass)
                 else:
                     print "file '{}' could not be extracted".format(os.path.basename(cur_file))
-                    return 
+                    return
             except AttributeError, err:
                 print '{} : {}'.format(cur_file, err)
                 exit(1)
