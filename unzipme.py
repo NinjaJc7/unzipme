@@ -53,24 +53,23 @@ def progress(compressed_type):
     file_list = find_compressed_files_in_folder(compressed_type)
     bundle_length = len(file_list)
     if bundle_length > 1 and not bundle_length < 0 and not compressed_type:
-        if bundle_length > 1 and not bundle_length < 0 and not compressed_type:
-            answer = raw_input("{} files found, extract? (Y/N): ".format(bundle_length))
-            if answer.lower() == 'y':
-                set_file_permissions(file_list)
-                pbar = progressbar.ProgressBar(
-                    widgets=[progressbar.Percentage(), ' ', progressbar.SimpleProgress(), progressbar.Bar()])
-                # widgets = ['EXTRACTING: ', progressbar.FormatLabel(''), '', progressbar.ReverseBar(), ' ',
-                #            progressbar.Percentage()]
-                # pbar = progressbar.ProgressBar(widgets=widgets, maxval=bundle_length)
-                for n in pbar(range(bundle_length)):
-                    extract_file(file_list[n])
-                set_extract_permisions()
-            else:
-                print 'Files not extracted, exiting unzipme.'
-                exit(0)
+        answer = raw_input("{}, files found, extract? (Y/N): ".format(bundle_length))
+        if answer.lower() == 'y':
+            set_file_permissions(file_list)
+            pbar = progressbar.ProgressBar(
+                widgets=[progressbar.Percentage(), ' ', progressbar.SimpleProgress(), progressbar.Bar()])
+            # widgets = ['EXTRACTING: ', progressbar.FormatLabel(''), '', progressbar.ReverseBar(), ' ',
+            #            progressbar.Percentage()]
+            # pbar = progressbar.ProgressBar(widgets=widgets, maxval=bundle_length)
+            for n in pbar(range(bundle_length)):
+                extract_file(file_list[n])
+            set_extract_permisions()
+        else:
+            print 'Files not extracted, exiting unzipme.'
+            exit(0)
 
     if bundle_length > 1 and not bundle_length < 0 and compressed_type:
-        answer = raw_input("{} {} files found, extract? (Y/N): ".format(bundle_length, compressed_type))
+        answer = raw_input("{}, {} files found, extract? (Y/N): ".format(bundle_length, compressed_type))
         if answer.lower() == 'y':
             set_file_permissions(file_list)
             pbar = progressbar.ProgressBar(
@@ -160,20 +159,22 @@ def extract_file(cur_file, zip_pass=False):
                 zip_ref = zipfile.ZipFile(cur_file, 'r')
                 zip_ref.extractall(extract_path)
                 zip_ref.close()
-                return True
+                return
             except RuntimeError, err:
-                answer = raw_input("Password invalid or missing, continue? (Y/N) : ")
+                answer = raw_input("\n'{}': Password invalid or missing, continue? (Y/N) : ".format(os.path.basename(cur_file)))
                 if answer.lower() == 'y':
                     zip_pass = getpass.getpass(prompt='Enter Password: ')
+                    print ''
                     extract_file(cur_file, zip_pass)
                 else:
+                    print "file '{}' could not be extracted".format(os.path.basename(cur_file))
                     return False
             except AttributeError, err:
                 print '{} : {}'.format(cur_file, err)
                 exit(1)
 
         # *.zip File extraction w/ password
-        if cur_file.endswith(patterns[0]) and zip_pass:
+        elif cur_file.endswith(patterns[0]) and zip_pass:
             try:
                 zip_ref = zipfile.ZipFile(cur_file, 'r')
                 zip_ref.extractall(path=extract_path, pwd=zip_pass)
@@ -185,6 +186,7 @@ def extract_file(cur_file, zip_pass=False):
                     zip_pass = getpass.getpass(prompt='Enter Password: ')
                     extract_file(cur_file, zip_pass)
                 else:
+                    print "file '{}' could not be extracted".format(os.path.basename(cur_file))
                     return False
             except AttributeError, err:
                 print '{} : {}'.format(cur_file, err)
