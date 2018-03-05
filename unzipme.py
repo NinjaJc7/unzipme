@@ -105,12 +105,18 @@ def progress(compressed_type, verbose=False):
 def set_file_permissions(bundle_list, verbose=False):
     """Checks and sets permissions to compressed/zipped file.
     """
-    if verbose:
-        print 'setting permission to files found\n'
-    for i in bundle_list:
-        os.chmod(i, 0777)
-    return
-
+    try:
+        if verbose:
+            print 'setting permission to files found\n'
+        for i in bundle_list:
+            os.chmod(i, 0777)
+        return
+    except os.error:
+        answer = raw_input("'Could not Apply permissions to file(s), try to extract anyway?' (Y/N): ")
+        if answer.lower() == 'y':
+            return
+        else:
+            exit(0)
 
 def find_compressed_files_in_folder(file_type, verbose=False):
     """Finds compressed files in directory, returns them as a list.
@@ -139,6 +145,9 @@ def find_compressed_files_in_folder(file_type, verbose=False):
     except KeyboardInterrupt:
         print "\nSearch stopped, exiting unzipme.py"
         exit(0)
+
+def get_extract_command():
+    return
 
 def extract_file(cur_file, zip_pass=False, verbose=False):
     """Extracts current file in sub-folder EXTRACTED
